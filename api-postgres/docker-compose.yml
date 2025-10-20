@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Serviço da nossa API Nest.js
+  app:
+    build: . # Constrói a imagem a partir do Dockerfile na pasta atual
+    ports:
+      - "3000:3000" # Mapeia a porta do seu PC para a porta do contêiner
+    depends_on:
+      - db # Garante que o banco de dados inicie antes da API
+    # Passa as variáveis de ambiente para a nossa aplicação Nest.js
+    # O Nest.js usará isso no app.module.ts (process.env.DATABASE_USER, etc.)
+    environment:
+      DATABASE_HOST: ${POSTGRES_HOST}
+      DATABASE_PORT: ${POSTGRES_PORT}
+      DATABASE_USER: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_DB: ${POSTGRES_DB}
+
+  # Serviço do Banco de Dados Postgres
+  db:
+    image: postgres:14-alpine
+    # Configura o banco de dados usando as variáveis do nosso arquivo .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432" # Expõe a porta do banco para podermos acessá-lo externamente
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Garante que os dados não se percam
+
+volumes:
+  postgres_data:
