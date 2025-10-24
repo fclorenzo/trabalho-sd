@@ -46,4 +46,17 @@ export class ProdutosService {
     }
     return { message: `Produto com o ID "${id}" deletado com sucesso.` };
   }
+
+  async findRandom(): Promise<Produto> {
+    const count = await this.produtoModel.countDocuments().exec();
+    if (count === 0) {
+      throw new NotFoundException('Nenhum produto encontrado no banco.');
+    }
+    const random = Math.floor(Math.random() * count);
+    const produto = await this.produtoModel.findOne().skip(random).exec();
+    if (!produto) {
+      throw new NotFoundException('Produto não encontrado.');
+    }
+    return produto;
+  }
 }

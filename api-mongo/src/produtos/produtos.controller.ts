@@ -20,6 +20,11 @@ export class ProdutosController {
     return this.produtosService.findAll();
   }
 
+  @Get('random')
+  findRandom() {
+    return this.produtosService.findRandom();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.produtosService.findOne(id);

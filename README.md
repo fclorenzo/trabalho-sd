@@ -79,3 +79,253 @@ graph TD
     JMeter --"Requisições HTTP<br>(Ex: POST /produtos)"--> API_MONGO
     API_MONGO <--> DB_MONGO
 ```
+# 📚 Guia Rápido - Trabalho de Sistemas Distribuídos
+
+## 🚀 Para Executar o Trabalho (3 comandos)
+
+```powershell
+# 1. Subir containers (execute em cada pasta)
+cd api-postgres
+docker-compose up -d
+
+cd ..\api-mongo  
+docker-compose up -d
+
+# 2. Instalar JMeter (se não tiver)
+# Baixe: https://jmeter.apache.org/download_jmeter.cgi
+# Extraia para: C:\apache-jmeter\
+
+# 3. Executar trabalho completo
+cd ..\scripts
+.\run-trabalho-completo.ps1
+```
+
+**⏱️ Tempo total:** ~50-60 minutos
+
+---
+
+## 📁 Arquivos Criados
+
+### Scripts (`scripts/`)
+- **`run-trabalho-completo.ps1`** ⭐ - Script principal do trabalho
+  - Popula 50k registros
+  - Executa 3 cenários (A, B, C) 
+  - Testa com 20k para comparação
+  - Gera todos os relatórios
+
+- **`seed-data.ps1`** / **`seed-data.js`** - Popular banco com dados
+  - Windows/PowerShell: `.\seed-data.ps1 -ApiUrl "http://localhost:3000" -Count 50000`
+  - macOS/Linux/Node.js: `node seed-data.js http://localhost:3000 50000`
+
+- **`quick-test.ps1`** - Teste individual rápido
+  - Uso: `.\quick-test.ps1 -Api "postgres" -Scenario "balanced"`
+
+- **`generate-summary.ps1`** - Gera resumo comparativo
+  - Chamado automaticamente pelo script principal
+
+- **`demo-report.ps1`** - Demo rápida (30s) para ver como funciona
+  - Uso: `.\demo-report.ps1`
+
+### Planos JMeter (`jmeter/`)
+- **`test-plan-balanced.jmx`** - Cenário A (50% leitura / 50% escrita)
+- **`test-plan-read-heavy.jmx`** - Cenário B (75% leitura / 25% escrita)
+- **`test-plan-write-heavy.jmx`** - Cenário C (25% leitura / 75% escrita)
+
+### Documentação
+- **`TRABALHO.md`** ⭐ - Guia completo do trabalho
+- **`GUIA_JMETER.md`** - Tutorial detalhado do JMeter
+- **`README.md`** - Documentação da arquitetura
+
+---
+
+## 📊 O que o Script Faz
+
+1. ✅ Verifica pré-requisitos (JMeter, APIs)
+2. 🌱 Popula PostgreSQL com 50.000 produtos
+3. 🌱 Popula MongoDB com 50.000 produtos
+4. 🚀 Executa **6 testes** (3 cenários × 2 bancos):
+   - Cenário A: 50 clientes lendo + 50 escrevendo (5 min)
+   - Cenário B: 75 clientes lendo + 25 escrevendo (5 min)
+   - Cenário C: 25 clientes lendo + 75 escrevendo (5 min)
+5. 🔄 Limpa e repopula com 20.000 registros
+6. 🚀 Executa **2 testes** comparativos (Cenário A com 20k)
+7. 📈 Gera **8 relatórios HTML** + resumo comparativo
+
+---
+
+## 📂 Resultados Gerados
+
+```
+results/
+└── trabalho_<timestamp>/
+    ├── 50k_postgres_cenario-a-50-50_report/index.html
+    ├── 50k_mongo_cenario-a-50-50_report/index.html
+    ├── 50k_postgres_cenario-b-75-25_report/index.html
+    ├── 50k_mongo_cenario-b-75-25_report/index.html
+    ├── 50k_postgres_cenario-c-25-75_report/index.html
+    ├── 50k_mongo_cenario-c-25-75_report/index.html
+    ├── 20k_postgres_cenario-a-50-50_report/index.html
+    ├── 20k_mongo_cenario-a-50-50_report/index.html
+    └── RESUMO.txt  ← Comparação de métricas
+```
+
+---
+
+## 🎯 Métricas para Analisar
+
+| Métrica | O que é | Melhor |
+|---------|---------|--------|
+| **Throughput** | Requisições/segundo | ⬆️ MAIOR |
+| **Latência Média** | Tempo médio de resposta | ⬇️ MENOR |
+| **P95/P99** | 95%/99% das requisições | ⬇️ MENOR |
+| **Taxa de Erro** | % de falhas | ⬇️ 0% |
+
+---
+
+## 💡 Dicas Importantes
+
+### Para Teste Rápido (validar funcionamento)
+```powershell
+.\run-trabalho-completo.ps1 -QuickTest
+# Usa apenas 1000 registros e 1 min por teste
+```
+
+### Se Já Tiver Dados Populados
+```powershell
+.\run-trabalho-completo.ps1 -SkipSeed
+# Pula etapa de população
+```
+
+### JMeter em Local Diferente
+```powershell
+.\run-trabalho-completo.ps1 -JMeterPath "C:\caminho\jmeter.bat"
+```
+
+### Problemas com APIs
+```powershell
+# Ver status
+docker ps
+
+# Reiniciar
+cd api-postgres
+docker-compose restart
+
+cd ..\api-mongo
+docker-compose restart
+```
+
+---
+
+## 📝 Perguntas do Trabalho
+
+### 1. Qual banco teve melhor desempenho?
+- Compare throughput e latência nos 3 cenários
+- Analise os relatórios HTML lado a lado
+
+### 2. Como o dataset afeta o desempenho?
+- Compare métricas: 50k vs 20k registros
+- Use o arquivo RESUMO.txt
+
+### 3. Quando usar SQL vs NoSQL?
+- Baseado nos resultados dos testes
+- Considere: consistência, flexibilidade, performance
+
+---
+
+## ✅ Checklist de Execução
+
+- [ ] Docker Desktop rodando
+- [ ] JMeter instalado em `C:\apache-jmeter\`
+- [ ] APIs Postgres (3000) e Mongo (3001) online
+- [ ] Executei `.\run-trabalho-completo.ps1`
+- [ ] Aguardei conclusão (~50-60 min)
+- [ ] Verifiquei 8 relatórios HTML gerados
+- [ ] Li o arquivo RESUMO.txt
+- [ ] Analisei os gráficos nos relatórios
+- [ ] Documentei conclusões
+
+---
+
+## 🆘 Problemas Comuns
+
+### "JMeter não encontrado"
+**Solução:** Baixe em https://jmeter.apache.org e extraia para `C:\apache-jmeter\`
+
+### "API não responde"
+**Solução:** `docker-compose up -d` na pasta da API
+
+### "Seed muito lento"
+**Normal para 50k!** Use `-QuickTest` primeiro para validar
+
+### "Muitos erros nos testes"
+**Soluções:**
+- Reduza clientes (ex: 50 ao invés de 100)
+- Aumente RAM do Docker (Settings → Resources)
+- Use duração maior para estabilizar
+
+---
+
+## 📞 Comandos Úteis
+
+```powershell
+# Ver containers rodando
+docker ps
+
+# Ver logs
+docker logs api-postgres-app-1
+docker logs api-mongo-app-1
+
+# Testar API manualmente
+Invoke-RestMethod -Uri "http://localhost:3000/produtos"
+
+# Ver resultados
+ls ..\results
+
+# Abrir relatório
+start ..\results\trabalho_<timestamp>\50k_postgres_cenario-a-50-50_report\index.html
+
+# Limpar tudo
+docker-compose down -v  # Execute em cada pasta de API
+```
+
+---
+
+## 🎓 Para o Relatório do Trabalho
+
+### Estrutura Sugerida
+
+1. **Introdução**
+   - Objetivo: Comparar SQL vs NoSQL
+   - Tecnologias: Nest.js, PostgreSQL, MongoDB, JMeter
+
+2. **Metodologia**
+   - Arquitetura (3 camadas)
+   - Dataset: 50k produtos
+   - Cenários: A (50/50), B (75/25), C (25/75)
+   - Clientes: 100 simultâneos
+
+3. **Resultados**
+   - Tabela comparativa (todas as métricas)
+   - Gráficos dos relatórios HTML
+   - Comparação 50k vs 20k
+
+4. **Análise**
+   - Qual banco foi melhor em cada cenário?
+   - Por quê?
+   - Impacto do tamanho do dataset
+
+5. **Conclusão**
+   - Quando usar cada tecnologia
+   - Lições aprendidas
+
+### Evidências para Anexar
+- Screenshots dos relatórios HTML (Dashboard)
+- Arquivo RESUMO.txt
+- Gráficos de Response Time e Throughput
+- Tabela comparativa preenchida
+
+---
+
+**🎉 Tudo pronto! Execute `.\run-trabalho-completo.ps1` e aguarde os resultados!**
+
+Leia `TRABALHO.md` para detalhes completos.

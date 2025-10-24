@@ -17,18 +17,23 @@ export class ProdutosController {
     return this.produtosService.findAll();
   }
 
+  @Get('random')
+  findRandom() {
+    return this.produtosService.findRandom();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.produtosService.findOne(+id);
+    return this.produtosService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProdutoDto: UpdateProdutoDto) {
-    return this.produtosService.update(+id, updateProdutoDto);
+    return this.produtosService.update(id, updateProdutoDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.produtosService.remove(+id);
+    return this.produtosService.remove(id);
   }
 }
